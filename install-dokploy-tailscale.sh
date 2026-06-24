@@ -217,24 +217,34 @@ connect_tailscale() {
     return
   fi
 
-  # If key not provided via arg, prompt
+  # If key not provided via arg, ask if user wants Tailscale
   if [ -z "$TS_KEY" ]; then
     echo ""
-    echo -e "${BOLD}${CYAN}Tailscale Setup${NC}"
+    echo -e "${BOLD}${CYAN}Tailscale Setup (Optional)${NC}"
     echo ""
-    echo "To connect this server to your Tailscale network, you need an auth key."
+    echo "Would you like to set up Tailscale? (free, private VPN access)"
+    echo "  - Access Dokploy securely from any device"
+    echo "  - No public exposure needed"
+    echo "  - Free plan: 6 users, 100 devices"
     echo ""
-    echo -e "${BOLD}How to get one:${NC}"
-    echo "  1. Go to: https://login.tailscale.com/admin/settings/keys"
-    echo "  2. Click 'Generate auth key'"
-    echo "  3. Check: 'Ephemeral' (auto-cleans dead nodes)"
-    echo "  4. Check: 'Reusable' (survives restarts)"
-    echo "  5. Copy the key (starts with tskey-...)"
+    read -p "$(echo -e ${BOLD}'Set up Tailscale? [Y/n]: '${NC})" ts_choice
+
+    if [[ "$ts_choice" =~ ^[Nn] ]]; then
+      echo -e "${YELLOW}Skipping Tailscale. You can set it up later:${NC}"
+      echo "  curl -fsSL https://tailscale.com/install.sh | sh"
+      echo "  sudo tailscale up"
+      SKIP_TS=true
+      return
+    fi
+
     echo ""
-    echo -e "${BOLD}Don't have a Tailscale account?${NC}"
-    echo "  Sign up free: https://login.tailscale.com/start"
-    echo "  Free plan: 6 users, 100 devices, unlimited personal use"
-    echo "  Source: https://tailscale.com/pricing"
+    echo -e "${BOLD}How to get an auth key:${NC}"
+    echo "  1. Sign up free: https://login.tailscale.com/start"
+    echo "  2. Go to: https://login.tailscale.com/admin/settings/keys"
+    echo "  3. Click 'Generate auth key'"
+    echo "  4. Check: 'Ephemeral' (auto-cleans dead nodes)"
+    echo "  5. Check: 'Reusable' (survives restarts)"
+    echo "  6. Copy the key (starts with tskey-...)"
     echo ""
     read -p "$(echo -e ${BOLD}'Paste your Tailscale auth key (or press Enter to skip): '${NC})" TS_KEY
   fi
